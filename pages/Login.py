@@ -1,7 +1,7 @@
 import flet as ft
 
-
 class LoginUI(ft.UserControl):
+    "The Main UI for Login Route"
     def __init__(self) -> None:
         super().__init__()
 

@@ -1,14 +1,17 @@
-import speech_recognition as sr
-from io import BytesIO
+# import speech_recognition as sr #! can not use on Mobile
+# from io import BytesIO
 import flet as ft
 import requests
-import pygame
-import base64
+# import pygame #! can not use on Mobile
+# import base64
 
 
 class ChatUI(ft.UserControl):
+    "The Main UI for Chat Route"
     def __init__(self, window: ft.Page) -> None:
         super().__init__()
+        # pygame.mixer.init()
+        # self.er = None
         self.version = "v1.0.8"
         self.window: ft.Page = window
         self.window.on_resize = self.handel_resize
@@ -38,7 +41,6 @@ class ChatUI(ft.UserControl):
         # self.aud = ft.Audio(src_base64="./data.json")
         # self.window.overlay.append(self.aud)
 
-        pygame.mixer.init()
         self.username: str = (
             "User"  # type: ignore
             if not self.window.client_storage.get("USERNAME")  # type: ignore
@@ -60,6 +62,7 @@ class ChatUI(ft.UserControl):
             value=False,
             label="Enable Voice Chat",
             label_position=ft.LabelPosition.RIGHT,
+            disabled=True
         )
 
         return ft.AppBar(
@@ -120,7 +123,7 @@ class ChatUI(ft.UserControl):
         )
         # TextField to type a question
         self.textbox: ft.TextField = ft.TextField(
-            hint_text="ask",
+            hint_text="ask....",
             multiline=True,
             max_lines=2,
             expand=True,
@@ -131,9 +134,9 @@ class ChatUI(ft.UserControl):
             shift_enter=True,
             on_submit=self.send_msg,
         )
-
+        
         # microphone
-        self.microphone = ft.IconButton("mic", on_click=self.mic_on, tooltip="Talk with Mic")
+        self.microphone = ft.IconButton("mic", on_click= None, tooltip="Talk with Mic (SOON)", disabled=True)
 
         # send btn
         self.send_btn: ft.ElevatedButton = ft.ElevatedButton(
@@ -245,6 +248,7 @@ Developer: NooR MaseR
                                     on_change=self.change_acc,
                                     label="voice accent",
                                     value=self.acc,
+                                    error_text="Not working for now",
                                     options=[
                                         ft.dropdown.Option(text=lang) for lang in self.langs.keys()
                                     ],
@@ -252,7 +256,7 @@ Developer: NooR MaseR
                             ]
                         ),
                     ),
-                    ft.Container(height=10),
+                    ft.Container(height=5),
                     ft.Row(
                         alignment=ft.MainAxisAlignment.END,
                         controls=[
@@ -272,18 +276,28 @@ Developer: NooR MaseR
                 controls=[
                     self.msgs_container,
                     self.loading,
-                    ft.Row(
-                        alignment=ft.MainAxisAlignment.CENTER,
-                        controls=[
-                            self.textbox,
-                            self.microphone,
-                            self.send_btn,
-                        ],
-                    ),
+                    ft.Container(
+                        shadow=ft.BoxShadow(
+                            color=ft.colors.BLACK12,
+                            # spread_radius=10,
+                            blur_radius=40,
+                            offset=ft.Offset(0, -40),
+                            blur_style=ft.ShadowBlurStyle.NORMAL
+                        ),
+                        content= ft.Row(
+                            alignment=ft.MainAxisAlignment.CENTER,
+                            controls=[
+                                self.textbox,
+                                self.microphone,
+                                self.send_btn,
+                            ],
+                        ),
+                    )
                 ],
             )
         )
     
+    """
     def mic_on(self,_) -> None:
         mic = sr.Recognizer()
         self.mic_error = False
@@ -310,6 +324,7 @@ Developer: NooR MaseR
                 self.textbox.update()
                 self.send_btn.update()
         except Exception as e:
+            self.er = e
             print(e)
             self.mic_error = True
             self.textbox.value = None
@@ -319,7 +334,8 @@ Developer: NooR MaseR
             self.textbox.update()
             self.send_btn.update()
             self.microphone.update()
-
+    """
+    
     def change_acc(self, e: ft.ControlEvent) -> None:
         self.window.client_storage.set("ACC", e.data) #type: ignore
         self.acc = e.data
@@ -342,12 +358,12 @@ Developer: NooR MaseR
         enabled), `acc` (for accent) and `APIkey` (an API key). The request also includes the `Content-Type` header
         set to `application/json`.
         """
-        if not self.mic_error:
-            question: str = str(self.textbox.value).strip() if not self.using_mic else str(self.text_from_mic)
-        else:
-            question: str = "error"
+        # if not self.mic_error:
+        question: str = str(self.textbox.value).strip() # if not self.using_mic else str(self.text_from_mic)
+        # else:
+            # question: str = "error"
 
-        self.using_mic = False
+        # self.using_mic = False
         if question:
             self.loading.visible = True
             self.send_btn.disabled = True
@@ -361,6 +377,7 @@ Developer: NooR MaseR
             self.textbox.read_only = True
             user_question = CreateUserQuestion(self.username, question)
             self.msgs_container.content.controls[0].controls.append(user_question)  # type: ignore
+            # self.msgs_container.content.controls[0].controls.append(ft.Text(self.er if self.er else "No Error"))
             self.msgs_container.content.controls[0].update()  # type: ignore
             self.textbox.update()
 
@@ -379,10 +396,12 @@ Developer: NooR MaseR
                 response: dict = self.req.json()
                 self.req.close()
                 self.question: str | None = response.get("result")
-                if response.get("aud"):
-                    self.base64_audio = base64.b64decode(response["aud"])
-                    pygame.mixer.music.load(BytesIO(self.base64_audio))
-                    pygame.mixer.music.play()
+                
+                #? enable for running audio
+                # if response.get("aud"):
+                #     self.base64_audio = base64.b64decode(response["aud"])
+                #     pygame.mixer.music.load(BytesIO(self.base64_audio))
+                #     pygame.mixer.music.play()
             except Exception as e:
                 print(e)
                 self.question = "error while connecting"
@@ -397,8 +416,8 @@ Developer: NooR MaseR
             # self.send_btn.on_click = self.send_msg
             self.textbox.value = None
             self.textbox.read_only = False
-            self.microphone.disabled = False
-            self.microphone.update()
+            # self.microphone.disabled = False
+            # self.microphone.update()
             self.update()
 
     def close_bottom_sheet(self, _: ft.ControlEvent) -> None:

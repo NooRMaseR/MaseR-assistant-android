@@ -1,4 +1,3 @@
 flet
 flet-easy
 requests
-SpeechRecognition==3.10.0
