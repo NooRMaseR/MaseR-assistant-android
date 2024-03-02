@@ -1,18 +1,27 @@
-# import speech_recognition as sr #! can not use on Mobile
-# from io import BytesIO
+from widgets.Send_btn import Send_btn
 import flet as ft
+import platform
 import requests
-# import pygame #! can not use on Mobile
-# import base64
+import sys
+
+from widgets.animations import AnimateChatResponse
+
+#* check if using mobile for modules
+isMobile: bool = False if platform.system() in ["Windows", "Macos"] else True
+if not isMobile:
+    import speech_recognition as sr 
+    from io import BytesIO
+    import pygame 
+    import base64
 
 
 class ChatUI(ft.UserControl):
     "The Main UI for Chat Route"
     def __init__(self, window: ft.Page) -> None:
         super().__init__()
-        # pygame.mixer.init()
-        # self.er = None
-        self.version = "v1.0.8"
+        pygame.mixer.init()
+        self.er = None
+        self.version = "v1.1.0"
         self.window: ft.Page = window
         self.window.on_resize = self.handel_resize
         self.using_mic: bool = False
@@ -38,9 +47,6 @@ class ChatUI(ft.UserControl):
         # )
         # self.window.overlay.append(self.file_picker)
 
-        # self.aud = ft.Audio(src_base64="./data.json")
-        # self.window.overlay.append(self.aud)
-
         self.username: str = (
             "User"  # type: ignore
             if not self.window.client_storage.get("USERNAME")  # type: ignore
@@ -62,7 +68,7 @@ class ChatUI(ft.UserControl):
             value=False,
             label="Enable Voice Chat",
             label_position=ft.LabelPosition.RIGHT,
-            disabled=True
+            disabled=True if isMobile else False
         )
 
         return ft.AppBar(
@@ -136,12 +142,14 @@ class ChatUI(ft.UserControl):
         )
         
         # microphone
-        self.microphone = ft.IconButton("mic", on_click= None, tooltip="Talk with Mic (SOON)", disabled=True)
-
-        # send btn
-        self.send_btn: ft.ElevatedButton = ft.ElevatedButton(
-            text="Send", on_click=self.send_msg
+        self.microphone = ft.IconButton(
+            "mic",
+            on_click= self.mic_on,
+            tooltip="Talk With Mic (SOON)" if isMobile else "Talk With Mic",
+            disabled= True if isMobile else False
         )
+
+        self.send_btn = Send_btn(self.send_msg, self.textbox)
 
         # loading animation when sending msg
         self.loading: ft.ProgressBar = ft.ProgressBar(visible=False)
@@ -248,7 +256,7 @@ Developer: NooR MaseR
                                     on_change=self.change_acc,
                                     label="voice accent",
                                     value=self.acc,
-                                    error_text="Not working for now",
+                                    error_text="Not working for now" if isMobile else None,
                                     options=[
                                         ft.dropdown.Option(text=lang) for lang in self.langs.keys()
                                     ],
@@ -297,7 +305,7 @@ Developer: NooR MaseR
             )
         )
     
-    """
+    
     def mic_on(self,_) -> None:
         mic = sr.Recognizer()
         self.mic_error = False
@@ -330,11 +338,11 @@ Developer: NooR MaseR
             self.textbox.value = None
             self.textbox.disabled = False
             self.send_btn.disabled = False
-            self.microphone.disabled = True
+            self.microphone.disabled = False
             self.textbox.update()
             self.send_btn.update()
             self.microphone.update()
-    """
+    
     
     def change_acc(self, e: ft.ControlEvent) -> None:
         self.window.client_storage.set("ACC", e.data) #type: ignore
@@ -358,18 +366,15 @@ Developer: NooR MaseR
         enabled), `acc` (for accent) and `APIkey` (an API key). The request also includes the `Content-Type` header
         set to `application/json`.
         """
-        # if not self.mic_error:
-        question: str = str(self.textbox.value).strip() # if not self.using_mic else str(self.text_from_mic)
-        # else:
-            # question: str = "error"
+        if not self.mic_error:
+            question: str = str(self.textbox.value).strip() # if not self.using_mic else str(self.text_from_mic)
+        else:
+            question: str = "error"
 
-        # self.using_mic = False
+        self.using_mic = False
         if question:
             self.loading.visible = True
             self.send_btn.disabled = True
-            # self.send_btn.icon = ft.icons.STOP_CIRCLE_OUTLINED
-            # self.send_btn.text = "Stop"
-            # self.send_btn.on_click = lambda _: self.req.close()
             self.send_btn.update()
             self.loading.update()
 
@@ -398,26 +403,24 @@ Developer: NooR MaseR
                 self.question: str | None = response.get("result")
                 
                 #? enable for running audio
-                # if response.get("aud"):
-                #     self.base64_audio = base64.b64decode(response["aud"])
-                #     pygame.mixer.music.load(BytesIO(self.base64_audio))
-                #     pygame.mixer.music.play()
+                if response.get("aud"):
+                    self.base64_audio = base64.b64decode(response["aud"])
+                    pygame.mixer.music.load(BytesIO(self.base64_audio))
+                    pygame.mixer.music.play()
             except Exception as e:
-                print(e)
+                print(e, file=sys.stderr)
                 self.question = "error while connecting"
                 error = True
 
             answer = CreateChatResponse(self.question, error, self.mic_error)  # type: ignore
             self.msgs_container.content.controls[0].controls.append(answer)  # type: ignore
+            # AnimateChatResponse(answer) #TODO (solve this animation)
             self.loading.visible = False
             self.send_btn.disabled = False
-            # self.send_btn.text = "Send"
-            # self.send_btn.icon = None
-            # self.send_btn.on_click = self.send_msg
             self.textbox.value = None
             self.textbox.read_only = False
-            # self.microphone.disabled = False
-            # self.microphone.update()
+            self.microphone.disabled = False
+            self.microphone.update()
             self.update()
 
     def close_bottom_sheet(self, _: ft.ControlEvent) -> None:
@@ -434,6 +437,7 @@ Developer: NooR MaseR
         self.msgs_container.height = self.window.height - 200
         self.update()
 
+    #! can not use on mobile
     # def change_user_profile(self, e: ft.FilePickerResultEvent) -> None:
     #     # breakpoint()
     #     self.__image_path: str = e.files[0].path  # type: ignore

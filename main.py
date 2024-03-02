@@ -1,4 +1,5 @@
 from pages.Login import LoginUI
+from dotenv import load_dotenv
 from pages.Chat import ChatUI
 import flet_easy as fs
 import flet as ft
@@ -6,7 +7,7 @@ import flet as ft
 #? SpeechRecognition==3.10.0
 
 app = fs.FletEasy(route_init="/chat", route_login="/login")
-
+load_dotenv()
 
 @app.config
 def app_config(page: ft.Page):
@@ -25,8 +26,8 @@ def main(data: fs.Datasy) -> ft.View:
     page = data.page
     page.title = "MaseR Assistant"
     # page.theme_mode = ft.ThemeMode.LIGHT
-    page.window_width = 366  #! remove or comment this line when building mobile app (for testing on desktop only)
-    page.window_center()  #! remove or comment this line when building mobile app (for testing on desktop only)
+    # page.window_width = 366  #! remove or comment this line when building mobile app (for testing on desktop only)
+    # page.window_center()  #! remove or comment this line when building mobile app (for testing on desktop only)
     UI = ChatUI(page)
     return ft.View("/", controls=[UI], appbar=UI.Appbar())
 
@@ -40,7 +41,7 @@ def login_page(data: fs.Datasy) -> ft.View:
 
 
 @app.login
-def login(page: ft.Page):
+def login(page: ft.Page) -> bool:
     if page.client_storage.get("API") == "123":  # type: ignore
         return True
     return False
