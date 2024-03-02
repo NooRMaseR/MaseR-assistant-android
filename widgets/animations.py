@@ -40,7 +40,7 @@ class AnimateChatResponse(ft.UserControl):
         elif state == "false":
             container.width = 40
             icon_button.scale = ft.Scale(1)
-            icon_button.rotate.angle = 55
+            icon_button.rotate.angle -= 1.55 #55
             text.scale = ft.Scale(1.30)
             text.offset = ft.Offset(1.5, 0)
             text.opacity = 0
@@ -57,7 +57,7 @@ class AnimateChatResponse(ft.UserControl):
         text: ft.Text = e.control.content.controls[1]
         text.opacity = 0
         container.width = 130
-        icon_button.offset.x = 1.5
+        icon_button.offset = ft.Offset(1.5, 0)
         container.update()
         icon_button.update()
         text.update()

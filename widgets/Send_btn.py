@@ -1,5 +1,5 @@
-from typing import Callable
 from .animations import AnimateChatResponse
+from typing import Callable
 import flet as ft
 
 

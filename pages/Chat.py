@@ -374,8 +374,6 @@ Developer: NooR MaseR
         self.using_mic = False
         if question:
             self.loading.visible = True
-            self.send_btn.disabled = True
-            self.send_btn.update()
             self.loading.update()
 
             self.textbox.value = "Connecting...."
@@ -416,7 +414,6 @@ Developer: NooR MaseR
             self.msgs_container.content.controls[0].controls.append(answer)  # type: ignore
             # AnimateChatResponse(answer) #TODO (solve this animation)
             self.loading.visible = False
-            self.send_btn.disabled = False
             self.textbox.value = None
             self.textbox.read_only = False
             self.microphone.disabled = False
