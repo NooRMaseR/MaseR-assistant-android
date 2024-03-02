@@ -333,7 +333,7 @@ Developer: NooR MaseR
                 self.send_btn.update()
         except Exception as e:
             self.er = e
-            print(e)
+            print(f"error: {e}")
             self.mic_error = True
             self.textbox.value = None
             self.textbox.disabled = False
@@ -367,7 +367,7 @@ Developer: NooR MaseR
         set to `application/json`.
         """
         if not self.mic_error:
-            question: str = str(self.textbox.value).strip() # if not self.using_mic else str(self.text_from_mic)
+            question: str = str(self.textbox.value).strip() if not self.using_mic else str(self.text_from_mic)
         else:
             question: str = "error"
 
