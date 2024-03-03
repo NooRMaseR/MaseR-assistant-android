@@ -6,7 +6,7 @@ import sys
 
 from widgets.animations import AnimateChatResponse
 
-#* check if using mobile for modules
+# * check if using mobile for modules
 isMobile: bool = False if platform.system() in ["Windows", "Macos"] else True
 if not isMobile:
     import speech_recognition as sr 
@@ -140,7 +140,7 @@ class ChatUI(ft.UserControl):
             shift_enter=True,
             on_submit=self.send_msg,
         )
-        
+
         # microphone
         self.microphone = ft.IconButton(
             "mic",
@@ -304,8 +304,7 @@ Developer: NooR MaseR
                 ],
             )
         )
-    
-    
+
     def mic_on(self,_) -> None:
         mic = sr.Recognizer()
         self.mic_error = False
@@ -342,8 +341,7 @@ Developer: NooR MaseR
             self.textbox.update()
             self.send_btn.update()
             self.microphone.update()
-    
-    
+
     def change_acc(self, e: ft.ControlEvent) -> None:
         self.window.client_storage.set("ACC", e.data) #type: ignore
         self.acc = e.data
@@ -375,7 +373,8 @@ Developer: NooR MaseR
         if question:
             self.loading.visible = True
             self.loading.update()
-
+            self.microphone.disabled = True
+            self.microphone.update()
             self.textbox.value = "Connecting...."
             self.textbox.read_only = True
             user_question = CreateUserQuestion(self.username, question)
@@ -399,8 +398,8 @@ Developer: NooR MaseR
                 response: dict = self.req.json()
                 self.req.close()
                 self.question: str | None = response.get("result")
-                
-                #? enable for running audio
+
+                # ? enable for running audio
                 if response.get("aud"):
                     self.base64_audio = base64.b64decode(response["aud"])
                     pygame.mixer.music.load(BytesIO(self.base64_audio))
@@ -412,7 +411,8 @@ Developer: NooR MaseR
 
             answer = CreateChatResponse(self.question, error, self.mic_error)  # type: ignore
             self.msgs_container.content.controls[0].controls.append(answer)  # type: ignore
-            # AnimateChatResponse(answer) #TODO (solve this animation)
+            self.msgs_container.content.controls[0].update()  # type: ignore
+            AnimateChatResponse(answer)
             self.loading.visible = False
             self.textbox.value = None
             self.textbox.read_only = False
@@ -448,11 +448,16 @@ Developer: NooR MaseR
 class CreateChatResponse(ft.UserControl):
     def __init__(self, answer: str | None, error: bool, mic_error: bool) -> None:
         super().__init__()
+        self.widget: ft.Text
         self.answer: str | None = answer
         self.error: bool = error
         self.mic_error: bool = mic_error
 
     def build(self) -> ft.Container:
+        self.widget = ft.Text(
+            self.answer if not self.mic_error else "error wile initializing microphone",
+            color=ft.colors.WHITE if self.error or self.mic_error else None
+        )
         return ft.Container(
             bgcolor=ft.colors.RED_700 if self.error or self.mic_error else None,
             content=ft.ListTile(
@@ -463,10 +468,7 @@ class CreateChatResponse(ft.UserControl):
                 leading=ft.CircleAvatar(
                     content=ft.Image("assets/my_pic.jpeg", border_radius=50)
                 ),
-                subtitle=ft.Text(
-                    self.answer if not self.mic_error else "error wile initializing microphone",
-                    color=ft.colors.WHITE if self.error or self.mic_error else None,
-                ),
+                subtitle=self.widget,
                 trailing=ft.IconButton(
                     ft.icons.COPY_OUTLINED,
                     icon_color=(
