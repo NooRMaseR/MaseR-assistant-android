@@ -1,10 +1,7 @@
-from widgets.Send_btn import Send_btn
-import flet as ft
-import platform
-import requests
-import sys
-
 from widgets.animations import AnimateChatResponse
+from widgets.Send_btn import Send_btn
+import platform, requests, sys
+import flet as ft
 
 # * check if using mobile for modules
 isMobile: bool = False if platform.system() in ["Windows", "Macos"] else True
@@ -21,7 +18,7 @@ class ChatUI(ft.UserControl):
         super().__init__()
         pygame.mixer.init()
         self.er = None
-        self.version = "v1.1.0"
+        self.version = "v1.1.1"
         self.window: ft.Page = window
         self.window.on_resize = self.handel_resize
         self.using_mic: bool = False
@@ -149,7 +146,10 @@ class ChatUI(ft.UserControl):
             disabled= True if isMobile else False
         )
 
-        self.send_btn = Send_btn(self.send_msg, self.textbox)
+        self.send_btn = Send_btn(
+            lambda e: [self.enable_mic_when_send_btn(), self.send_msg(e)],
+            self.textbox
+        )
 
         # loading animation when sending msg
         self.loading: ft.ProgressBar = ft.ProgressBar(visible=False)
@@ -305,6 +305,9 @@ Developer: NooR MaseR
             )
         )
 
+    def enable_mic_when_send_btn(self) -> None:
+        self.mic_error = False
+        
     def mic_on(self,_) -> None:
         mic = sr.Recognizer()
         self.mic_error = False
@@ -335,6 +338,7 @@ Developer: NooR MaseR
             print(f"error: {e}")
             self.mic_error = True
             self.textbox.value = None
+            self.using_mic = False
             self.textbox.disabled = False
             self.send_btn.disabled = False
             self.microphone.disabled = False
@@ -379,7 +383,7 @@ Developer: NooR MaseR
             self.textbox.read_only = True
             user_question = CreateUserQuestion(self.username, question)
             self.msgs_container.content.controls[0].controls.append(user_question)  # type: ignore
-            # self.msgs_container.content.controls[0].controls.append(ft.Text(self.er if self.er else "No Error"))
+            # self.msgs_container.content.controls[0].controls.append(ft.Text(self.er if self.er else "No Error")) #? check for error for mobile
             self.msgs_container.content.controls[0].update()  # type: ignore
             self.textbox.update()
 
