@@ -10,13 +10,13 @@ if not isMobile:
     from io import BytesIO
     import pygame 
     import base64
+    pygame.mixer.init()
 
 
 class ChatUI(ft.UserControl):
     "The Main UI for Chat Route"
     def __init__(self, window: ft.Page) -> None:
         super().__init__()
-        pygame.mixer.init()
         self.er = None
         self.version = "v1.1.1"
         self.window: ft.Page = window
@@ -374,7 +374,7 @@ Developer: NooR MaseR
             question: str = "error"
 
         self.using_mic = False
-        if question:
+        if question and not self.textbox.read_only:
             self.loading.visible = True
             self.loading.update()
             self.microphone.disabled = True
@@ -420,8 +420,9 @@ Developer: NooR MaseR
             self.loading.visible = False
             self.textbox.value = None
             self.textbox.read_only = False
-            self.microphone.disabled = False
-            self.microphone.update()
+            if not isMobile:
+                self.microphone.disabled = False
+                self.microphone.update()
             self.update()
 
     def close_bottom_sheet(self, _: ft.ControlEvent) -> None:
