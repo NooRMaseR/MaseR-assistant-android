@@ -307,32 +307,35 @@ Developer: NooR MaseR
 
     def enable_mic_when_send_btn(self) -> None:
         self.mic_error = False
-        
+
     def mic_on(self,_) -> None:
         mic = sr.Recognizer()
         self.mic_error = False
         self.using_mic = True
         try:
+            self.textbox.value = "Listening....."
+            self.textbox.disabled = True
+            self.send_btn.disabled = True
+            self.microphone.disabled = True
+            self.textbox.update()
+            self.send_btn.update()
+            self.microphone.update()
+            
             with sr.Microphone() as source:
-
-                self.textbox.value = "Listening....."
-                self.textbox.disabled = True
-                self.send_btn.disabled = True
-                self.microphone.disabled = True
-                self.textbox.update()
-                self.send_btn.update()
-                self.microphone.update()
+                mic.adjust_for_ambient_noise(source)
                 print("lisnning...")
-                audio = mic.listen(source)  # listen for the user's voice activity on the microphone
+                audio = mic.listen(source)
+                print("recognizing...")
                 self.text_from_mic = str(mic.recognize_google(audio))  # convert speech to text
-                print(self.text_from_mic)
-                self.send_msg(_)
-                del mic
-                self.textbox.value = None
-                self.textbox.disabled = False
-                self.send_btn.disabled = False
-                self.textbox.update()
-                self.send_btn.update()
+                
+            print(self.text_from_mic)
+            self.send_msg(_)
+            del mic
+            self.textbox.value = None
+            self.textbox.disabled = False
+            self.send_btn.disabled = False
+            self.textbox.update()
+            self.send_btn.update()
         except Exception as e:
             self.er = e
             print(f"error: {e}")
@@ -400,16 +403,16 @@ Developer: NooR MaseR
                     headers={"Content-Type": "application/json"},
                 )
                 response: dict = self.req.json()
+
                 self.req.close()
                 self.question: str | None = response.get("result")
-
                 # ? enable for running audio
                 if response.get("aud"):
                     self.base64_audio = base64.b64decode(response["aud"])
                     pygame.mixer.music.load(BytesIO(self.base64_audio))
                     pygame.mixer.music.play()
             except Exception as e:
-                print(e, file=sys.stderr)
+                print(f"error request {e}", file=sys.stderr)
                 self.question = "error while connecting"
                 error = True
 
