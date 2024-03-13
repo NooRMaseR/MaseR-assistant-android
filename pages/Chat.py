@@ -146,9 +146,16 @@ class ChatUI(ft.UserControl):
             disabled= True if isMobile else False
         )
 
-        self.send_btn = Send_btn(
-            lambda e: [self.enable_mic_when_send_btn(), self.send_msg(e)],
-            self.textbox
+        self.send_btn = (
+            Send_btn(
+                lambda e: [self.disable_mic_when_send_btn(), self.send_msg(e)],
+                self.textbox,
+            )
+            if not isMobile
+            else ft.IconButton(
+                icon=ft.icons.SEND_ROUNDED,
+                on_click=lambda e: [self.disable_mic_when_send_btn(), self.send_msg(e)],
+            )
         )
 
         # loading animation when sending msg
@@ -305,9 +312,9 @@ Developer: NooR MaseR
             )
         )
 
-    def enable_mic_when_send_btn(self) -> None:
+    def disable_mic_when_send_btn(self) -> None:
         self.mic_error = False
-        
+
     def mic_on(self,_) -> None:
         mic = sr.Recognizer()
         self.mic_error = False
