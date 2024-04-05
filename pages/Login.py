@@ -1,28 +1,25 @@
 import flet as ft
 
-class LoginUI(ft.UserControl):
+class LoginUI(ft.SafeArea):
     "The Main UI for Login Route"
     def __init__(self) -> None:
         super().__init__()
-
-    def build(self) -> ft.SafeArea:
         self.username = ft.TextField(hint_text="UserName....", max_length=10)
         self.API_text = ft.TextField(
             hint_text="API....",
             max_length=10,
-            input_filter=ft.NumbersOnlyInputFilter()
+            input_filter=ft.NumbersOnlyInputFilter(),
         )
-        self.login_btn = ft.ElevatedButton(text="Login", on_click= self.validate_login)
+        self.login_btn = ft.ElevatedButton(text="Login", on_click=self.validate_login)
 
-        return ft.SafeArea(
-            content= ft.Column(
-                controls=[
-                    self.username,
-                    self.API_text,
-                    self.login_btn
-                ]
-            )
+        self.content = ft.Column(
+            controls=[
+                self.username,
+                self.API_text,
+                self.login_btn,
+            ]
         )
+
 
     def validate_login(self, _) -> None:
         username: str | None = self.username.value

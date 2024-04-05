@@ -3,13 +3,11 @@ from typing import Callable
 import flet as ft
 
 
-class Send_btn(ft.UserControl):
+class Send_btn(ft.Row):
     def __init__(self, sendit: Callable, message_field: ft.TextField) -> None:
         super().__init__()
         self.sendit = sendit
         self.message_feild = message_field
-
-    def build(self) -> ft.Row:
         self.btn = ft.IconButton(
             icon=ft.icons.SEND_SHARP,
             icon_color="white",
@@ -44,8 +42,12 @@ class Send_btn(ft.UserControl):
                 end=ft.alignment.center_right,
             ),
         )
-        return ft.Row(controls=[self.container], expand=True, alignment="center")  # type: ignore
+        
+        # Adding the UI
+        self.controls=[self.container]
+        self.alignment= ft.MainAxisAlignment.CENTER
 
+    
     def Send_Message(self, e) -> None:
         AnimateChatResponse.animate_send_btnOnClick(e)
         self.sendit(str(self.message_feild.value))

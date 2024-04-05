@@ -3,7 +3,7 @@ from pages.Chat import ChatUI
 import flet_easy as fs
 import flet as ft
 
-#? SpeechRecognition==3.10.0
+# ? SpeechRecognition==3.10.0
 
 app = fs.FletEasy(route_init="/chat", route_login="/login")
 
