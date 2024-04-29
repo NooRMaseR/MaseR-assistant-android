@@ -1,3 +1,5 @@
 flet
 flet-easy
 requests
+pygame
+SpeechRecognition==3.10.0

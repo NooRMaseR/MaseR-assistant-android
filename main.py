@@ -8,7 +8,8 @@ import flet as ft
 app = fs.FletEasy(route_init="/chat", route_login="/login")
 
 @app.config
-def app_config(page: ft.Page):
+def app_config(data: fs.Datasy):
+    page = data.page
     THEME: str | None = page.client_storage.get("THEME") # type: ignore
     if THEME:
         page.theme_mode = THEME # type: ignore
@@ -17,20 +18,19 @@ def app_config(page: ft.Page):
         page.client_storage.set("THEME", THEME) # type: ignore
         page.theme_mode = THEME # type: ignore
 
-
+        
 @app.page("/chat", protected_route=True)
 def main(data: fs.Datasy) -> ft.View:
-
     page = data.page
     page.title = "MaseR Assistant"
-    # page.theme_mode = ft.ThemeMode.LIGHT
+
     # page.window_width = 366  #! remove or comment this line when building mobile app (for testing on desktop only)
     # page.window_center()  #! remove or comment this line when building mobile app (for testing on desktop only)
     UI = ChatUI(page)
     return ft.View("/", controls=[UI], appbar=UI.Appbar())
 
 
-@app.page("/login", True)
+@app.page("/login", page_clear=True)
 def login_page(data: fs.Datasy) -> ft.View:
     page = data.page
     page.title = "Log in"
@@ -39,8 +39,8 @@ def login_page(data: fs.Datasy) -> ft.View:
 
 
 @app.login
-def login(page: ft.Page) -> bool:
-    if page.client_storage.get("API") == "123":  # type: ignore
+def login(page: fs.Datasy) -> bool:
+    if page.page.client_storage.get("API") == "123":  # type: ignore
         return True
     return False
 

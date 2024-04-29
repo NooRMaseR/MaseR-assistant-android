@@ -19,6 +19,7 @@ class ChatUI(ft.SafeArea):
         super().__init__()
         self.er = None
         self.version = "v1.1.3"
+        print(f"{self.page = }")
         self.window: ft.Page = window
         self.window.on_resize = self.handel_resize
         self.using_mic: bool = False
@@ -39,6 +40,7 @@ class ChatUI(ft.SafeArea):
             "Spanish (Spain)": "es",
             "Spanish (United States)": "us"   
         }
+
         self.file_picker: ft.FilePicker = ft.FilePicker(
             on_result=self.change_user_profile
         )
@@ -46,19 +48,20 @@ class ChatUI(ft.SafeArea):
 
         self.username: str = (
             "User"  # type: ignore
-            if not self.window.client_storage.get("USERNAME")  # type: ignore
-            else self.window.client_storage.get("USERNAME")  # type: ignore
+            if not self.window.client_storage.get("USERNAME")
+            else self.window.client_storage.get("USERNAME")
         )
         self.theme: str = (
             "system"  # type: ignore
-            if not self.window.client_storage.get("THEME")  # type: ignore
-            else self.window.client_storage.get("THEME")  # type: ignore
+            if not self.window.client_storage.get("THEME")
+            else self.window.client_storage.get("THEME")
         )
         self.acc: str = (
-            "English (United States)"
-            if not self.window.client_storage.get("ACC")  # type: ignore
-            else self.window.client_storage.get("ACC")  # type: ignore
+            "English (United States)" #type: ignore
+            if not self.window.client_storage.get("ACC")
+            else self.window.client_storage.get("ACC")
         )
+
 
         # * ============================== setting up the UI ===============================================
         # a container for the sent messages
@@ -168,14 +171,16 @@ Developer: NooR MaseR
 
         self.profile_pic = ft.Container(
             content=ft.CircleAvatar(
-                content=ft.Image(
-                    (
-                        "assets/user.png"
-                        if not self.window.client_storage.get("PIC")
-                        else self.window.client_storage.get("PIC")
-                    ),
-                    border_radius=50,
-                )
+                foreground_image_src="assets/user.png"
+                # content=ft.Image(
+                #     (
+                #          "assets/user.png"
+                #          if not self.window.client_storage.get("PIC")
+                #          else self.window.client_storage.get("PIC")
+                #     ),
+                #     "assets/user.png",
+                #     # border_radius=50,
+                # )
             ),
             ink=True,
             on_click=lambda _: self.file_picker.pick_files(
@@ -193,6 +198,7 @@ Developer: NooR MaseR
             enable_drag=False,
             content=ft.Column(
                 horizontal_alignment=ft.CrossAxisAlignment.CENTER,
+                scroll=ft.ScrollMode.AUTO,
                 controls=[
                     ft.Text("settings", size=24, weight=ft.FontWeight.W_500),
                     ft.Divider(),
@@ -380,13 +386,7 @@ Developer: NooR MaseR
         self.msgs_container.content.update()  # type:ignore
 
     def send_msg(self, _: ft.ControlEvent) -> None:
-        """
-        sending a `POST` request to the URL
-        https://maser-assistant.onrender.com/chat/quary-android with a JSON payload. The payload
-        includes the `quary` (question), `voiceEnabled` (a boolean indicating whether voice is
-        enabled), `acc` (for accent) and `APIkey` (an API key). The request also includes the `Content-Type` header
-        set to `application/json`.
-        """
+        
         if not self.mic_error:
             question: str = str(self.textbox.value).strip() if not self.using_mic else str(self.text_from_mic)
         else:
@@ -403,7 +403,6 @@ Developer: NooR MaseR
             self.textbox.read_only = True
             user_question = CreateUserQuestion(self.window, self.username, question)
             self.msgs_container.content.controls[0].controls.append(user_question)  # type: ignore
-            # self.msgs_container.content.controls[0].controls.append(ft.Text(self.er if self.er else "No Error")) #? check for error for mobile
             self.msgs_container.content.controls[0].update()  # type: ignore
             self.textbox.update()
 
@@ -423,7 +422,7 @@ Developer: NooR MaseR
 
                 self.req.close()
                 self.question: str | None = response.get("result")
-                # ? enable for running audio
+                
                 if response.get("aud"):
                     self.base64_audio = base64.b64decode(response["aud"])
                     pygame.mixer.music.load(BytesIO(self.base64_audio))
@@ -483,10 +482,10 @@ class CreateChatResponse(ft.ListTile):
             color=ft.colors.WHITE if self.error or self.mic_error else None,
         )
         
-        self.bgcolor=ft.colors.RED_700 if self.error or self.mic_error else None,
+        self.bgcolor=ft.colors.RED_700 if (self.error or self.mic_error) else None,
         self.title=ft.Text(
             "MaseR Assistant",
-            color=ft.colors.WHITE if self.error or self.mic_error else None,
+            color=ft.colors.WHITE if (self.error or self.mic_error) else None,
         )
         self.leading=ft.CircleAvatar(
             content=ft.Image(
