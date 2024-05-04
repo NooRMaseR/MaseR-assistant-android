@@ -21,13 +21,13 @@ class LoginUI(ft.SafeArea):
         )
 
 
-    def validate_login(self, _) -> None:
+    async def validate_login(self, _) -> None:
         username: str | None = self.username.value
         api: str | None = self.API_text.value
         if username.strip(): #type: ignore
-            self.page.client_storage.set("USERNAME", username)  # type: ignore
+            await self.page.client_storage.set_async("USERNAME", username)  # type: ignore
             if api == "123":
-                self.page.client_storage.set("API", api)  # type: ignore
+                await self.page.client_storage.set_async("API", api)  # type: ignore
                 self.page.go("/chat") #type: ignore
             else:
                 self.API_text.error_text = "Wrong API"

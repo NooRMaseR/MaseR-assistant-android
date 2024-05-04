@@ -7,19 +7,19 @@ import flet as ft
 
 app = fs.FletEasy(route_init="/chat", route_login="/login")
 
-@app.config
-def app_config(data: fs.Datasy):
-    page = data.page
-    THEME: str | None = page.client_storage.get("THEME") # type: ignore
+
+@app.config # type: ignore
+async def app_config(page: ft.Page):
+    THEME: str | None = await page.client_storage.get_async("THEME") 
     if THEME:
         page.theme_mode = THEME # type: ignore
     else:
         THEME = "system"
-        page.client_storage.set("THEME", THEME) # type: ignore
+        await page.client_storage.set_async("THEME", THEME)
         page.theme_mode = THEME # type: ignore
 
-        
-@app.page("/chat", protected_route=True)
+
+@app.page("/chat", protected_route=True, share_data=True)
 def main(data: fs.Datasy) -> ft.View:
     page = data.page
     page.title = "MaseR Assistant"
@@ -27,7 +27,7 @@ def main(data: fs.Datasy) -> ft.View:
     # page.window_width = 366  #! remove or comment this line when building mobile app (for testing on desktop only)
     # page.window_center()  #! remove or comment this line when building mobile app (for testing on desktop only)
     UI = ChatUI(page)
-    return ft.View("/", controls=[UI], appbar=UI.Appbar())
+    return ft.View("/chat", controls=[UI], appbar=UI.Appbar())
 
 
 @app.page("/login", page_clear=True)
@@ -35,7 +35,7 @@ def login_page(data: fs.Datasy) -> ft.View:
     page = data.page
     page.title = "Log in"
 
-    return ft.View("login", controls=[LoginUI()])
+    return ft.View("/login", controls=[LoginUI()])
 
 
 @app.login
