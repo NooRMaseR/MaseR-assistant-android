@@ -169,15 +169,16 @@ Developer: NooR MaseR
         )
 
         self.profile_pic = ft.Container(
+            border_radius=50,
             content=ft.CircleAvatar(
+                bgcolor=ft.colors.TRANSPARENT,
                 content=ft.Image(
                     (
                         "assets/user.png"  # type: ignore
                         if not self.window.client_storage.get("PIC")
                         else self.window.client_storage.get("PIC")
                     ),
-                    fit=ft.ImageFit.CONTAIN
-                    # border_radius=50,
+                    # border_radius=25,
                 )
             ),
             ink=True,
@@ -490,7 +491,7 @@ class CreateChatResponse(ft.ListTile):
             color=ft.colors.WHITE if self.error or self.mic_error else None,
         )
         
-        self.bgcolor=ft.colors.RED_700 if (self.error or self.mic_error) else None,
+        self.bgcolor=ft.colors.RED_700 if (self.error or self.mic_error) else None
         self.title=ft.Text(
             "MaseR Assistant",
             color=ft.colors.WHITE if (self.error or self.mic_error) else None,
