@@ -7,20 +7,21 @@ import flet as ft
 usingMobile: bool = False if platform.system() in ["Windows", "Macos"] else True
 if not usingMobile:
     import speech_recognition as sr 
+    from base64 import b64decode
     from io import BytesIO
     import pygame 
-    import base64
     pygame.mixer.init()
 
 
 class ChatUI(ft.SafeArea):
     "The Main UI for Chat Route"
-    def __init__(self, window: ft.Page) -> None:
-        super().__init__()
+
+    def __init__(self, window: ft.Page, content: ft.Control = ft.Column()):
+        super().__init__(ft.Column())
         self.er = None
         self.version = "v1.1.8"
         self.window: ft.Page = window
-        self.window.on_resize = self.handel_resize
+        self.window.on_resized = self.handel_resize
         self.using_mic: bool = False
         self.mic_error: bool = False
         self.langs: dict[str, str] = {
@@ -148,7 +149,7 @@ Developer: NooR MaseR
                         self.window.close_dialog(),
                     ],
                 ),
-            ],
+            ]
         )
 
         self.dialog_logout = ft.CupertinoAlertDialog(
@@ -178,7 +179,8 @@ Developer: NooR MaseR
                         if not self.window.client_storage.get("PIC")
                         else self.window.client_storage.get("PIC")
                     ),
-                    # border_radius=25,
+                    border_radius=25,
+                    aspect_ratio= 1 / 1
                 )
             ),
             ink=True,
@@ -249,7 +251,7 @@ Developer: NooR MaseR
                         ],
                     ),
                     ft.Container(height=5),
-                ],
+                ], # type: ignore
             ),
         )
 
@@ -336,24 +338,23 @@ Developer: NooR MaseR
         self.mic_error = False
         self.using_mic = True
         try:
-            self.textbox.value = "Listening....."
-            self.textbox.disabled = True
-            self.send_btn.disabled = True
-            self.microphone.disabled = True
-            self.textbox.update()
-            self.send_btn.update()
-            self.microphone.update()
 
             with sr.Microphone() as source:
                 mic.adjust_for_ambient_noise(source)
+                self.textbox.value = "Listening....."
+                self.textbox.disabled = True
+                self.send_btn.disabled = True
+                self.microphone.disabled = True
+                self.textbox.update()
+                self.send_btn.update()
+                self.microphone.update()
                 # mic.non_speaking_duration = 5
                 print("lisnning...")
                 audio = mic.listen(source)
                 print("recognizing...")
                 self.text_from_mic = str(mic.recognize_google(audio))  # convert speech to text
 
-
-            print(self.text_from_mic)
+            # print(self.text_from_mic)
             self.send_msg(_)
             self.textbox.value = None
             self.textbox.disabled = False
@@ -433,8 +434,13 @@ Developer: NooR MaseR
                 self.question: str | None = response.get("result")
                 # ? enable for running audio
                 if response.get("aud"):
-                    self.base64_audio = base64.b64decode(response["aud"])
-                    pygame.mixer.music.load(BytesIO(self.base64_audio))
+                    # self.base64_audio = response["aud"]
+                    # self.audio = ft.Audio(src_base64 = self.base64_audio, autoplay=False)
+                    # self.window.overlay.append(self.audio)
+                    # self.audio.src_base64 = self.base64_audio
+                    # self.audio.play()
+                    base64_audio = b64decode(response["aud"])
+                    pygame.mixer.music.load(BytesIO(base64_audio))
                     pygame.mixer.music.play()
             except Exception as e:
                 print(f"error request {e}", file=sys.stderr)
@@ -467,10 +473,10 @@ Developer: NooR MaseR
         self.msgs_container.height = self.window.height - 200
         self.msgs_container.update()
 
-    async def change_user_profile(self, e: ft.FilePickerResultEvent) -> None:
+    def change_user_profile(self, e: ft.FilePickerResultEvent) -> None:
         self.__image_path: str = e.files[0].path  # type: ignore
         if os.path.exists(self.__image_path) and os.path.isfile(self.__image_path):
-            await self.window.client_storage.set_async("PIC", self.__image_path)
+            self.window.client_storage.set("PIC", self.__image_path)
             # Image.open(self.__image_path).save("assets/user.png", format="PNG")
             self.window.bottom_sheet.content.controls[2].controls[1].content.content.src = self.__image_path # type: ignore
             self.window.bottom_sheet.content.controls[2].controls[1].content.update() # type: ignore
@@ -512,7 +518,7 @@ class CreateChatResponse(ft.ListTile):
             tooltip="Copy",
         )
 
-    async def copy_msg(self, e: ft.ControlEvent) -> None:
+    def copy_msg(self, e: ft.ControlEvent) -> None:
         e.page.set_clipboard(self.answer)
         e.page.show_snack_bar(
             ft.SnackBar(
@@ -550,8 +556,11 @@ class CreateUserQuestion(ft.ListTile):
         )
 
 
-    async def copy_msg(self, e: ft.ControlEvent) -> None:
+    def copy_msg(self, e: ft.ControlEvent) -> None:
         e.page.set_clipboard(self.question)
         e.page.show_snack_bar(
-            ft.SnackBar(content=ft.Text("Copied"), show_close_icon=True, duration=2500)
+            ft.SnackBar(
+                content=ft.Text("Copied"),
+                show_close_icon=True,
+                duration=2500)
         )
